@@ -1,0 +1,6 @@
+[package]
+name = "redesigned-chainsaw"
+version = "0.1.0"
+authors = ["Sehny <sehnoutka.martin@gmail.com>"]
+
+[dependencies]
