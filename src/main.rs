@@ -29,23 +29,61 @@ impl Interpreter {
 
     /// Read tape with program (where 'tape' is represented by string)
     /// Return number of valid brainfuck characters
-    pub fn read_tape(&self, input: String) -> usize {
+    pub fn read_tape(&mut self, input: String) -> usize {
+        let mut count = 0;
         for c in input.chars() {
-            //println!("{}", c);
             match c {
                 '+' | '-' | '>' | '<' | '[' | ']' | '.' | ',' => {
-                    //println!("bf code");
+                    self.prog.push(c as u8);
+                    count += 1;
                 },
-                _ => {
-                    //println!("non bf");
-                }
+                _ => {}
             }
         }
-        0
+        count
     }
 
     /// Read next bf instruction
-    fn read_next_instruction(&self) {
+    fn read_next_instruction(&mut self) {
+        match self.prog[self.ip] {
+            b'+' => {
+                self.mem[self.dp] += 1;
+                self.ip += 1;
+            },
+            b'-' => {
+                self.mem[self.dp] -= 1;
+                self.ip += 1;
+            },
+            b'<' => {
+                self.dp -= 1;
+                self.ip += 1;
+            },
+            b'>' => {
+                self.dp += 1;
+                self.ip += 1;
+            },
+            b'[' => {
+                if self.mem[self.dp] != 0 {
+                    self.ip += 1;
+                } else {
+                    while self.prog[self.ip] != b']' {
+                        self.ip += 1;
+                    }
+                    self.ip += 1;
+                }
+            },
+            b']' => {
+                while self.prog[self.ip] != b'[' {
+                    self.ip -= 1;
+                }
+                self.ip += 1;
+            },
+            b'.' => {
+                print!("{}", self.mem[self.dp]);
+                self.ip += 1;
+            },
+            _ => {}
+        }
     }
 
     /// Run brainfuck program
@@ -56,9 +94,7 @@ impl Interpreter {
 fn main() {
     println!("Hello, world!");
     let mut a = Interpreter::new();
-    a.mem[0] = 1;
-    assert!(a.mem[0] != 0);
-    a.read_tape("Ahoj +++>++>+".to_string());
+    a.read_tape("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.".to_string());
 }
 
 #[cfg(test)]
@@ -71,35 +107,48 @@ fn test_sth() {
 #[cfg(test)]
 #[test]
 fn test_tape_reading() {
-    let bfi = Interpreter::new();
-    bfi.read_tape("abcd*()@+-[]<>.,".to_string());
+    let mut bfi = Interpreter::new();
+    let ret = bfi.read_tape("abcd*()@+-[]<>.,".to_string());
     assert!(bfi.prog == b"+-[]<>.,");
+    assert!(ret == 8);
 }
 
 #[cfg(test)]
 #[test]
 fn test_read_instruction() {
-    let bfi = Interpreter::new();
+    let mut bfi = Interpreter::new();
     bfi.read_tape("+".to_string());
     bfi.read_next_instruction();
     assert!(bfi.mem[0] == 1); 
 
-    let bfi = Interpreter::new();
-    bfi.read_tape("++-".to_string());
-    bfi.read_next_instruction();
+    let mut bfi = Interpreter::new();
+    let prog = "++-".to_string();
+    let len = prog.len();
+    bfi.read_tape(prog);
+    for _ in 0..len {
+        bfi.read_next_instruction();
+    }
     assert!(bfi.mem[0] == 1); 
     
-    let bfi = Interpreter::new();
-    bfi.read_tape(">+".to_string());
-    bfi.read_next_instruction();
+    let mut bfi = Interpreter::new();
+    let prog = ">+".to_string();
+    let len = prog.len();
+    bfi.read_tape(prog);
+    for _ in 0..len {
+        bfi.read_next_instruction();
+    }
     assert!(bfi.mem[1] == 1); 
 
-    let bfi = Interpreter::new();
-    bfi.read_tape(">><+".to_string());
-    bfi.read_next_instruction();
+    let mut bfi = Interpreter::new();
+    let prog = ">><+".to_string();
+    let len = prog.len();
+    bfi.read_tape(prog);
+    for _ in 0..len {
+        bfi.read_next_instruction();
+    }
     assert!(bfi.mem[1] == 1); 
 
-    let bfi = Interpreter::new();
+    let mut bfi = Interpreter::new();
     bfi.read_tape("[+++>>>]+++++".to_string());
     bfi.read_next_instruction();
     assert!(bfi.ip == 8); 
