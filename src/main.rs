@@ -73,13 +73,15 @@ impl Interpreter {
                 }
             },
             b']' => {
-                while self.prog[self.ip] != b'[' {
-                    self.ip -= 1;
+                if self.mem[self.dp] != 0 {
+                    while self.prog[self.ip] != b'[' {
+                        self.ip -= 1;
+                    }
                 }
                 self.ip += 1;
             },
             b'.' => {
-                print!("{}", self.mem[self.dp]);
+                print!("{}", self.mem[self.dp] as char);
                 self.ip += 1;
             },
             _ => {}
@@ -87,14 +89,40 @@ impl Interpreter {
     }
 
     /// Run brainfuck program
-    pub fn run(&self) {
+    pub fn run(&mut self) {
+        self.ip = 0;
+        self.dp = 0;
+        while self.ip < self.prog.len() {
+            self.read_next_instruction();
+        }
     }
 }
 
 fn main() {
-    println!("Hello, world!");
     let mut a = Interpreter::new();
-    a.read_tape("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.".to_string());
+    let tape = "1 ++++++++++\
+      2 [\
+      3  >+++++++\
+      4  >++++++++++\
+      5  >+++\
+      6  >+\
+      7  <<<<-\
+      8 ] inicializační cyklus nastaví potřebné hodnoty buněk\
+      9 >++. výpis 'H'\
+     10 >+. výpis 'e'\
+     11 +++++++. 'l'\
+     12 . 'l'\
+     13 +++. 'o'\
+     14 >++. mezera\
+     15 <<+++++++++++++++. 'W'\
+     16 >. 'o'\
+     17 +++. 'r'\
+     18 ------. 'l'\
+     19 --------. 'd'\
+     20 >+. '!'\
+     21 >. nová řádka";
+    a.read_tape(tape.to_string());
+    a.run();
 }
 
 #[cfg(test)]
@@ -155,6 +183,7 @@ fn test_read_instruction() {
 
     let mut bfi = Interpreter::new();
     bfi.read_tape("++[+-><]+".to_string());
+    bfi.mem[0] = 2;
     bfi.ip = 7;
     bfi.read_next_instruction();
     assert!(bfi.ip == 3); 
