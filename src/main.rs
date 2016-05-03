@@ -1,3 +1,7 @@
+use std::env;
+use std::io::prelude::*;
+use std::fs::File;
+
 /// Struct representing the interpreter state
 /// 
 /// # todo list
@@ -99,29 +103,24 @@ impl Interpreter {
 }
 
 fn main() {
+    // Prints each argument on a separate line
+    let mut args = env::args();
+    let mut file_name;
+    match args.nth(1) {
+        Some(str) => {
+            file_name = str.clone()
+        },
+        None => {
+            println!("Usage: bfi <file name>");
+            return;
+        }
+    }
+    let mut file = File::open(file_name).unwrap();
+    let mut tape = String::new();
+    file.read_to_string(&mut tape);
+
     let mut a = Interpreter::new();
-    let tape = "1 ++++++++++\
-      2 [\
-      3  >+++++++\
-      4  >++++++++++\
-      5  >+++\
-      6  >+\
-      7  <<<<-\
-      8 ] inicializační cyklus nastaví potřebné hodnoty buněk\
-      9 >++. výpis 'H'\
-     10 >+. výpis 'e'\
-     11 +++++++. 'l'\
-     12 . 'l'\
-     13 +++. 'o'\
-     14 >++. mezera\
-     15 <<+++++++++++++++. 'W'\
-     16 >. 'o'\
-     17 +++. 'r'\
-     18 ------. 'l'\
-     19 --------. 'd'\
-     20 >+. '!'\
-     21 >. nová řádka";
-    a.read_tape(tape.to_string());
+    a.read_tape(tape);
     a.run();
 }
 
