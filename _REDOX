@@ -1,0 +1,4 @@
+name=BrainFuckInterpreter
+icon=/ui/apps/accessories-calculator.bmp
+author=Martin Sehnoutka
+description=Brainfuck interpreter for Redox
